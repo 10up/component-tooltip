@@ -95,9 +95,9 @@
 
 		<script src="/dist/tooltip.js"></script>
 		<script type="text/javascript">
-			TenUp.tooltip( function() {
-				console.log( 'Amazing callback function!' );
-			} );
+			let myTooltip = new TenUp.tooltip( () => {
+				console.log( 'my awesome callback' );
+			});
 		</script>
 	</body>
 </html>

@@ -1,32 +1,61 @@
 'use strict';
 
-export default function Tooltip ( callback ) {
+export default class Tooltip {
 
-	// Caching and setting up some variables
-	let ttContainer          = document.querySelectorAll( '.a11y-tip' );
-	let ttContainerCount     = ttContainer.length;
-	let ttToggleClass        = 'a11y-tip--toggle';
-	let ttTriggerClass       = 'a11y-tip__trigger';
-	let ttTriggerToggleClass = 'a11y-tip__trigger--toggle';
-	let ttTrigger            = '.' + ttTriggerClass;
-	let ttTheTip             = '.a11y-tip__help';
-	let i;
-	let newButton;
-	let originalTrigger;
-	let getTipId;
-	let focusableElements    = [
-		'a',
-		'button',
-		'input',
-		'textarea',
-		'select',
-	];
+	constructor( callback = {} ) {
 
-	let setup = function ( obj ) {
+		// Tooltip Containers
+		this.$tooltips = document.querySelectorAll( '.a11y-tip' );
+
+		// Bail out if there's no tooltip.
+		if ( ! this.$tooltips  ) {
+			console.error( '10up Tooltip: Target not found. A valid target (a11y-tip) must be used.'  ); // eslint-disable-line
+			return;
+		}
+
+		document.documentElement.classList.add( 'js' );
+
+		// Settings
+		this.settings = Object.assign( {}, callback );
+
+		this.$tooltips.forEach( ( ttContainer ) => {
+			this.setupTooltip( ttContainer );
+		} );
+
+		this.settings.callback = callback;
+
+		// Do any callbacks, if assigned.
+		if ( this.settings.callback && 'function' === typeof this.settings.callback ) {
+			this.settings.callback.call();
+		}
+	}
+
+	/**
+	 * Initialize a given tooltip area.
+	 *
+	 * @param   {element} $ttContainer      The tooltip containing element.
+	 * @returns {void}
+	 */
+	setupTooltip( ttContainer ) {
+		let ttToggleClass        = 'a11y-tip--toggle';
+		let ttTriggerClass       = 'a11y-tip__trigger';
+		let ttTriggerToggleClass = 'a11y-tip__trigger--toggle';
+		let ttTrigger            = '.' + ttTriggerClass;
+		let ttTheTip             = '.a11y-tip__help';
+		let newButton;
+		let originalTrigger;
+		let getTipId;
+		let focusableElements    = [
+			'a',
+			'button',
+			'input',
+			'textarea',
+			'select',
+		];
 
 		// this will be needed for any components that don't have an ID set
 		let count = 1;
-		let self = obj;
+		let self = ttContainer;
 		let trigger = self.querySelector( ttTrigger );
 		let tip = self.querySelector( ttTheTip );
 
@@ -108,19 +137,6 @@ export default function Tooltip ( callback ) {
 			}
 
 		}, false );
-
-		// end the loop, increase count by 1
-		return count = count + 1;
-
-	}; // setup()
-
-	// Call setup()
-	for ( i = 0; i < ttContainerCount; i++ ) {
-		setup( ttContainer[i] );
-	}
-
-	// Execute the callback function
-	if ( 'function' === typeof callback ) {
-		callback.call();
 	}
 }
+
