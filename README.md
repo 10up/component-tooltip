@@ -47,11 +47,11 @@ Accessible tooltip component.
 
     <div>
         <span class="a11y-tip a11y-tip--no-delay">
-            <a href="#!" class="a11y-tip__trigger">
+            <a href="#tt_id" class="a11y-tip__trigger">
                 Link w/top tooltip
             </a>
 
-            <span class="a11y-tip__help a11y-tip__help--top">
+            <span id="tt_id" class="a11y-tip__help a11y-tip__help--top">
                 Activate this link to go somewhere!
             </span>
         </span><!--/.a11y-tip-->
@@ -63,7 +63,7 @@ Accessible tooltip component.
 
     <div>
         <span class="a11y-tip">
-            <button type="button" class="a11y-tip__trigger" aria-describedby="tt_id">
+            <button type="button" class="a11y-tip__trigger" aria-describedby="tt_id" aria-controls="tt_id">
                 Button w/bottom tooltip
             </button>
 

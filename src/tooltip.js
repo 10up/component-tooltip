@@ -8,7 +8,7 @@ export default class Tooltip {
 		this.$tooltips = document.querySelectorAll( '.a11y-tip' );
 
 		// Bail out if there's no tooltip.
-		if ( ! this.$tooltips  ) {
+		if ( ! this.$tooltips || 0 === this.$tooltips.length ) {
 			console.error( '10up Tooltip: Target not found. A valid target (a11y-tip) must be used.'  ); // eslint-disable-line
 			return;
 		}
