@@ -1,32 +1,43 @@
+import throttle from 'lodash.throttle';
 'use strict';
 
 export default class Tooltip {
 
-	constructor( callback = {} ) {
+	constructor( element, options = {} ) {
+
+		const defaults = {
+			onCreate: null,
+			onOpen: null,
+			onClose: null,
+		};
 
 		// Tooltip Containers
-		this.$tooltips = document.querySelectorAll( '.a11y-tip' );
+		this.$tooltips = document.querySelectorAll( element );
 
-		// Bail out if there's no tooltip.
-		if ( ! this.$tooltips || 0 === this.$tooltips.length ) {
-			console.error( '10up Tooltip: Target not found. A valid target (a11y-tip) must be used.'  ); // eslint-disable-line
+		if ( ! element && 0 === this.$tooltips.length ) {
+			console.error( '10up Tooltip: Target not found. A valid target (tooltip container) must be used.'  ); // eslint-disable-line
 			return;
 		}
 
 		document.documentElement.classList.add( 'js' );
 
 		// Settings
-		this.settings = Object.assign( {}, callback );
+		this.settings = Object.assign( {}, defaults, options );
+
+		// Bind internal methods
+		this.boundCloseTT = evt => this.closeTooltip( evt );
+		this.boundOpenTT = evt => this.openTooltip( evt );
+		this.manageBoundTrigger = evt => this.manageTrigger( evt );
 
 		this.$tooltips.forEach( ( ttContainer ) => {
 			this.setupTooltip( ttContainer );
 		} );
 
-		this.settings.callback = callback;
+		this.settings = Object.assign( {}, defaults, options );
 
 		// Do any callbacks, if assigned.
-		if ( this.settings.callback && 'function' === typeof this.settings.callback ) {
-			this.settings.callback.call();
+		if ( this.settings.onCreate && 'function' === typeof this.settings.onCreate ) {
+			this.settings.onCreate.call();
 		}
 	}
 
@@ -101,25 +112,16 @@ export default class Tooltip {
 			self.removeChild( self.querySelector( ttTrigger ) );
 			self.insertBefore( newButton, self.firstChild );
 
-			newButton.addEventListener( 'click', function ( ) {
-
-				if ( 'true' === this.getAttribute( 'aria-expanded' ) ) {
-					this.setAttribute( 'aria-expanded', 'false' );
-				} else if ( 'false' === this.getAttribute( 'aria-expanded' ) ) {
-					this.setAttribute( 'aria-expanded', 'true' );
-				}
-
-			}, false );
+			// Set event listener for trigger click
+			newButton.addEventListener( 'click', this.manageBoundTrigger );
 
 		} // if self contains the toggleClass
 
-		// hide the tooltip on blur of the trigger
-		trigger.addEventListener( 'blur', function( ) {
-
-			if( this.classList.contains( 'a11y-tip--hide' ) ) {
-				this.classList.remove( 'a11y-tip--hide' );
-			}
-		}, false );
+		if ( false === self.classList.contains( ttToggleClass ) ) {
+			// set Listeners for callbacks to fire
+			ttContainer.addEventListener( 'mouseover', throttle( this.boundOpenTT, 2000 ) );
+			ttContainer.addEventListener( 'mouseleave', throttle( this.boundCloseTT, 2000 ) );
+		}
 
 		// hide the tooltip on ESC because we have empathy and sometimes
 		// you just don't want a tool tip all up in your face, right?
@@ -128,15 +130,39 @@ export default class Tooltip {
 		// once they move focus away from the element that had the
 		// the tooltip, remove the hide-tip class so that the
 		// tip can be accessed again on re-focus.
-		trigger.addEventListener( 'keyup', function ( e ) {
+		trigger.addEventListener( 'keyup', this.boundOpenTT );
+	}
 
-			if ( 27 == e.which ) {
-				e.preventDefault();
-				this.classList.add( 'a11y-tip--hide' );
-				return false;
-			}
+	openTooltip( e ) {
+		let target = e.target;
 
-		}, false );
+		if ( target.classList.contains( 'a11y-tip--hide' ) ) {
+			target.classList.remove( 'a11y-tip--hide' );
+		}
+
+		if ( 27 == e.keyCode ) {
+			e.preventDefault();
+			target.classList.add( 'a11y-tip--hide' );
+			return false;
+		}
+
+		this.settings.onOpen.call();
+	}
+
+	closeTooltip() {
+		this.settings.onClose.call();
+	}
+
+	manageTrigger( e ) {
+		let triggerEl = e.target;
+
+		if ( 'true' === triggerEl.getAttribute( 'aria-expanded' ) ) {
+			triggerEl.setAttribute( 'aria-expanded', 'false' );
+			this.settings.onClose.call();
+		} else if ( 'false' === triggerEl.getAttribute( 'aria-expanded' ) ) {
+			triggerEl.setAttribute( 'aria-expanded', 'true' );
+			this.settings.onOpen.call();
+		}
 	}
 }
 
