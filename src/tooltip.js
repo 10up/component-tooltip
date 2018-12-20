@@ -1,4 +1,3 @@
-import throttle from 'lodash.throttle';
 'use strict';
 
 export default class Tooltip {
@@ -25,9 +24,9 @@ export default class Tooltip {
 		this.settings = Object.assign( {}, defaults, options );
 
 		// Bind internal methods
-		this.boundCloseTT = evt => this.closeTooltip( evt );
-		this.boundOpenTT = evt => this.openTooltip( evt );
 		this.manageBoundTrigger = evt => this.manageTrigger( evt );
+		this.boundManageTT = evt => this.manageTT( evt );
+		this.boundManageEsc = evt => this.manageEsc( evt );
 
 		this.$tooltips.forEach( ( ttContainer ) => {
 			this.setupTooltip( ttContainer );
@@ -119,9 +118,9 @@ export default class Tooltip {
 
 		if ( false === self.classList.contains( ttToggleClass ) ) {
 			// set Listeners for callbacks to fire
-			ttContainer.addEventListener( 'mouseover', throttle( this.boundOpenTT, 2000 ) );
-			ttContainer.addEventListener( 'mouseleave', throttle( this.boundCloseTT, 2000 ) );
+			tip.addEventListener( 'transitionend', this.boundManageTT );
 		}
+
 
 		// hide the tooltip on ESC because we have empathy and sometimes
 		// you just don't want a tool tip all up in your face, right?
@@ -130,27 +129,43 @@ export default class Tooltip {
 		// once they move focus away from the element that had the
 		// the tooltip, remove the hide-tip class so that the
 		// tip can be accessed again on re-focus.
-		trigger.addEventListener( 'keyup', this.boundOpenTT );
+		trigger.addEventListener( 'keyup', this.boundManageEsc );
 	}
 
-	openTooltip( e ) {
+	manageTT( e ) {
 		let target = e.target;
 
-		if ( target.classList.contains( 'a11y-tip--hide' ) ) {
-			target.classList.remove( 'a11y-tip--hide' );
+		if ( !e.pseudoElement ) {
+
+			if ( target.classList.contains( 'a11y-tip--hide' ) ) {
+				target.classList.remove( 'a11y-tip--hide' );
+			}
+
+			if ( '0' === window.getComputedStyle( e.target ).opacity ) {
+				if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
+					this.settings.onClose.call();
+				}
+			} else {
+				if ( this.settings.onOpen && 'function' === typeof this.settings.onOpen ) {
+					this.settings.onOpen.call();
+				}
+			}
 		}
+	}
+
+	manageEsc( e ) {
+		let target = e.target;
 
 		if ( 27 == e.keyCode ) {
 			e.preventDefault();
 			target.classList.add( 'a11y-tip--hide' );
+
+			if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
+				this.settings.onClose.call();
+			}
+
 			return false;
 		}
-
-		this.settings.onOpen.call();
-	}
-
-	closeTooltip() {
-		this.settings.onClose.call();
 	}
 
 	manageTrigger( e ) {
@@ -158,10 +173,14 @@ export default class Tooltip {
 
 		if ( 'true' === triggerEl.getAttribute( 'aria-expanded' ) ) {
 			triggerEl.setAttribute( 'aria-expanded', 'false' );
-			this.settings.onClose.call();
+			if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
+				this.settings.onClose.call();
+			}
 		} else if ( 'false' === triggerEl.getAttribute( 'aria-expanded' ) ) {
 			triggerEl.setAttribute( 'aria-expanded', 'true' );
-			this.settings.onOpen.call();
+			if ( this.settings.onOpen && 'function' === typeof this.settings.onOpen ) {
+				this.settings.onOpen.call();
+			}
 		}
 	}
 }
