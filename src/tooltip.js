@@ -1,32 +1,71 @@
 'use strict';
 
-export default function Tooltip ( callback ) {
+export default class Tooltip {
 
-	// Caching and setting up some variables
-	let ttContainer          = document.querySelectorAll( '.a11y-tip' );
-	let ttContainerCount     = ttContainer.length;
-	let ttToggleClass        = 'a11y-tip--toggle';
-	let ttTriggerClass       = 'a11y-tip__trigger';
-	let ttTriggerToggleClass = 'a11y-tip__trigger--toggle';
-	let ttTrigger            = '.' + ttTriggerClass;
-	let ttTheTip             = '.a11y-tip__help';
-	let i;
-	let newButton;
-	let originalTrigger;
-	let getTipId;
-	let focusableElements    = [
-		'a',
-		'button',
-		'input',
-		'textarea',
-		'select',
-	];
+	constructor( element, options = {} ) {
 
-	let setup = function ( obj ) {
+		const defaults = {
+			onCreate: null,
+			onOpen: null,
+			onClose: null,
+		};
+
+		// Tooltip Containers
+		this.$tooltips = document.querySelectorAll( element );
+
+		if ( ! element && 0 === this.$tooltips.length ) {
+			console.error( '10up Tooltip: Target not found. A valid target (tooltip container) must be used.'  ); // eslint-disable-line
+			return;
+		}
+
+		document.documentElement.classList.add( 'js' );
+
+		// Settings
+		this.settings = Object.assign( {}, defaults, options );
+
+		// Bind internal methods
+		this.manageBoundTrigger = evt => this.manageTrigger( evt );
+		this.boundManageTT = evt => this.manageTT( evt );
+		this.boundManageEsc = evt => this.manageEsc( evt );
+
+		this.$tooltips.forEach( ( ttContainer ) => {
+			this.setupTooltip( ttContainer );
+		} );
+
+		this.settings = Object.assign( {}, defaults, options );
+
+		// Do any callbacks, if assigned.
+		if ( this.settings.onCreate && 'function' === typeof this.settings.onCreate ) {
+			this.settings.onCreate.call();
+		}
+	}
+
+	/**
+	 * Initialize a given tooltip area.
+	 *
+	 * @param   {element} $ttContainer      The tooltip containing element.
+	 * @returns {void}
+	 */
+	setupTooltip( ttContainer ) {
+		let ttToggleClass        = 'a11y-tip--toggle';
+		let ttTriggerClass       = 'a11y-tip__trigger';
+		let ttTriggerToggleClass = 'a11y-tip__trigger--toggle';
+		let ttTrigger            = '.' + ttTriggerClass;
+		let ttTheTip             = '.a11y-tip__help';
+		let newButton;
+		let originalTrigger;
+		let getTipId;
+		let focusableElements    = [
+			'a',
+			'button',
+			'input',
+			'textarea',
+			'select',
+		];
 
 		// this will be needed for any components that don't have an ID set
 		let count = 1;
-		let self = obj;
+		let self = ttContainer;
 		let trigger = self.querySelector( ttTrigger );
 		let tip = self.querySelector( ttTheTip );
 
@@ -72,25 +111,16 @@ export default function Tooltip ( callback ) {
 			self.removeChild( self.querySelector( ttTrigger ) );
 			self.insertBefore( newButton, self.firstChild );
 
-			newButton.addEventListener( 'click', function ( ) {
-
-				if ( 'true' === this.getAttribute( 'aria-expanded' ) ) {
-					this.setAttribute( 'aria-expanded', 'false' );
-				} else if ( 'false' === this.getAttribute( 'aria-expanded' ) ) {
-					this.setAttribute( 'aria-expanded', 'true' );
-				}
-
-			}, false );
+			// Set event listener for trigger click
+			newButton.addEventListener( 'click', this.manageBoundTrigger );
 
 		} // if self contains the toggleClass
 
-		// hide the tooltip on blur of the trigger
-		trigger.addEventListener( 'blur', function( ) {
+		if ( false === self.classList.contains( ttToggleClass ) ) {
+			// set Listeners for callbacks to fire
+			tip.addEventListener( 'transitionend', this.boundManageTT );
+		}
 
-			if( this.classList.contains( 'a11y-tip--hide' ) ) {
-				this.classList.remove( 'a11y-tip--hide' );
-			}
-		}, false );
 
 		// hide the tooltip on ESC because we have empathy and sometimes
 		// you just don't want a tool tip all up in your face, right?
@@ -99,28 +129,59 @@ export default function Tooltip ( callback ) {
 		// once they move focus away from the element that had the
 		// the tooltip, remove the hide-tip class so that the
 		// tip can be accessed again on re-focus.
-		trigger.addEventListener( 'keyup', function ( e ) {
+		trigger.addEventListener( 'keyup', this.boundManageEsc );
+	}
 
-			if ( 27 == e.which ) {
-				e.preventDefault();
-				this.classList.add( 'a11y-tip--hide' );
-				return false;
+	manageTT( e ) {
+		let target = e.target;
+
+		if ( !e.pseudoElement ) {
+
+			if ( target.classList.contains( 'a11y-tip--hide' ) ) {
+				target.classList.remove( 'a11y-tip--hide' );
 			}
 
-		}, false );
-
-		// end the loop, increase count by 1
-		return count = count + 1;
-
-	}; // setup()
-
-	// Call setup()
-	for ( i = 0; i < ttContainerCount; i++ ) {
-		setup( ttContainer[i] );
+			if ( '0' === window.getComputedStyle( e.target ).opacity ) {
+				if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
+					this.settings.onClose.call();
+				}
+			} else {
+				if ( this.settings.onOpen && 'function' === typeof this.settings.onOpen ) {
+					this.settings.onOpen.call();
+				}
+			}
+		}
 	}
 
-	// Execute the callback function
-	if ( 'function' === typeof callback ) {
-		callback.call();
+	manageEsc( e ) {
+		let target = e.target;
+
+		if ( 27 == e.keyCode ) {
+			e.preventDefault();
+			target.classList.add( 'a11y-tip--hide' );
+
+			if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
+				this.settings.onClose.call();
+			}
+
+			return false;
+		}
+	}
+
+	manageTrigger( e ) {
+		let triggerEl = e.target;
+
+		if ( 'true' === triggerEl.getAttribute( 'aria-expanded' ) ) {
+			triggerEl.setAttribute( 'aria-expanded', 'false' );
+			if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
+				this.settings.onClose.call();
+			}
+		} else if ( 'false' === triggerEl.getAttribute( 'aria-expanded' ) ) {
+			triggerEl.setAttribute( 'aria-expanded', 'true' );
+			if ( this.settings.onOpen && 'function' === typeof this.settings.onOpen ) {
+				this.settings.onOpen.call();
+			}
+		}
 	}
 }
+
