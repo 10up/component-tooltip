@@ -146,4 +146,4 @@ let myTooltip = new TenUp.tooltip( () => {
 
 ## Demo
 
-An example implementation can be found in the `demo/index.html`.
+Example implementations can be found in the `demo` directory.
