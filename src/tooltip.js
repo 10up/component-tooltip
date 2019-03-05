@@ -1,5 +1,15 @@
 'use strict';
 
+/**
+ * @module @10up/Tooltip
+ *
+ * @description
+ *
+ * An accessible tooltip component.
+ *
+ * @param {string} element Element selector for the tooltip container.
+ * @param {Object} options Object of optional callbacks.
+ */
 export default class Tooltip {
 
 	constructor( element, options = {} ) {
@@ -25,8 +35,8 @@ export default class Tooltip {
 
 		// Bind internal methods
 		this.manageBoundTrigger = evt => this.manageTrigger( evt );
-		this.boundManageTT = evt => this.manageTT( evt );
-		this.boundManageEsc = evt => this.manageEsc( evt );
+		this.boundManageTT      = evt => this.manageTT( evt );
+		this.boundManageEsc     = evt => this.manageEsc( evt );
 
 		this.$tooltips.forEach( ( ttContainer ) => {
 			this.setupTooltip( ttContainer );
@@ -34,7 +44,10 @@ export default class Tooltip {
 
 		this.settings = Object.assign( {}, defaults, options );
 
-		// Do any callbacks, if assigned.
+		/**
+		 * Called after the tooltip is initialized on page load.
+		 * @callback onCreate
+		 */
 		if ( this.settings.onCreate && 'function' === typeof this.settings.onCreate ) {
 			this.settings.onCreate.call();
 		}
@@ -43,7 +56,7 @@ export default class Tooltip {
 	/**
 	 * Initialize a given tooltip area.
 	 *
-	 * @param   {element} $ttContainer      The tooltip containing element.
+	 * @param   {element} $ttContainer The tooltip containing element.
 	 * @returns {void}
 	 */
 	setupTooltip( ttContainer ) {
@@ -63,43 +76,43 @@ export default class Tooltip {
 			'select',
 		];
 
-		// this will be needed for any components that don't have an ID set
-		let count = 1;
-		let self = ttContainer;
+		// This will be needed for any components that don't have an ID set
+		let count   = 1;
+		let self    = ttContainer;
 		let trigger = self.querySelector( ttTrigger );
-		let tip = self.querySelector( ttTheTip );
+		let tip     = self.querySelector( ttTheTip );
 
-		// if a trigger is not an inherently focusable element, it'll need a
-		// tabindex. But if it can be inherently focused, then don't set a tabindex
+		// If a trigger is not an inherently focusable element, it'll need a
+		// tabindex. But if it can be inherently focused, then don't set a tabindex.
 		if ( ! focusableElements.includes( trigger.nodeName.toLowerCase() ) ) {
 			trigger.setAttribute( 'tabindex', '0' );
 		}
 
-		// if a tip doesn't have an ID, then we need to generate one
-		if ( !tip.getAttribute( 'id' ) ) {
+		// If a tip doesn't have an ID, then we need to generate one.
+		if ( ! tip.getAttribute( 'id' ) ) {
 			tip.setAttribute( 'id', 'tool_tip_' + count );
 		}
 
-		// if a trigger doesn't have an aria-described by, then we need
-		// to point it to the tip's ID
-		if ( !trigger.getAttribute( 'aria-describedby' ) ) {
+		// If a trigger doesn't have an aria-described by, then we need
+		// to point it to the tip's ID.
+		if ( ! trigger.getAttribute( 'aria-describedby' ) ) {
 			trigger.setAttribute( 'aria-describedby', tip.getAttribute( 'id' ) );
 		}
 
-		// if the element after a tooltip trigger does not have
+		// If the element after a tooltip trigger does not have
 		// the role of tooltip set, then set it.
-		if ( !tip.getAttribute( 'role' ) ) {
+		if ( ! tip.getAttribute( 'role' ) ) {
 			tip.setAttribute( 'role', 'tooltip' );
 		}
 
-		// if a tip container has ttToggleClass,
-		// we need to make sure the trigger is a button
+		// If a tip container has ttToggleClass,
+		// we need to make sure the trigger is a button.
 		if ( self.classList.contains( ttToggleClass ) ) {
 
 			originalTrigger = self.querySelector( ttTrigger ).innerHTML;
 			originalTrigger = originalTrigger.replace( /^\s+|\s+$/g, '' );
-			getTipId = self.querySelector( ttTheTip ).getAttribute( 'id' );
-			newButton = document.createElement( 'button' );
+			getTipId        = self.querySelector( ttTheTip ).getAttribute( 'id' );
+			newButton       = document.createElement( 'button' );
 
 			newButton.setAttribute( 'type', 'button' );
 			newButton.classList.add( ttTriggerClass );
@@ -117,12 +130,11 @@ export default class Tooltip {
 		} // if self contains the toggleClass
 
 		if ( false === self.classList.contains( ttToggleClass ) ) {
-			// set Listeners for callbacks to fire
+			// Set Listeners for callbacks to fire
 			tip.addEventListener( 'transitionend', this.boundManageTT );
 		}
 
-
-		// hide the tooltip on ESC because we have empathy and sometimes
+		// Hide the tooltip on ESC because we have empathy and sometimes
 		// you just don't want a tool tip all up in your face, right?
 		// if a keyboard user doesn't want/need the tooltip anymore
 		// allow them to hide it by pressing the ESC key.
@@ -132,20 +144,36 @@ export default class Tooltip {
 		trigger.addEventListener( 'keyup', this.boundManageEsc );
 	}
 
+	/**
+	 * Listens for `transitionend`.
+	 *
+	 * @listens transitionend
+	 * @param   {Object} e - The transitionend event object.
+	 */
 	manageTT( e ) {
 		let target = e.target;
 
-		if ( !e.pseudoElement ) {
+		if ( ! e.pseudoElement ) {
 
 			if ( target.classList.contains( 'a11y-tip--hide' ) ) {
 				target.classList.remove( 'a11y-tip--hide' );
 			}
 
 			if ( '0' === window.getComputedStyle( e.target ).opacity ) {
+
+				/**
+				 * Called when a tooltip is closed.
+				 * @callback onClose
+				 */
 				if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
 					this.settings.onClose.call();
 				}
 			} else {
+
+				/**
+				 * Called when a tooltip is opened.
+				 * @callback onOpen
+				 */
 				if ( this.settings.onOpen && 'function' === typeof this.settings.onOpen ) {
 					this.settings.onOpen.call();
 				}
@@ -153,6 +181,12 @@ export default class Tooltip {
 		}
 	}
 
+	/**
+	 * Allows user to 'esc' out of a tooltip with keyup.
+	 *
+	 * @listens keyup
+	 * @param   {Object} e The keyup event object.
+	 */
 	manageEsc( e ) {
 		let target = e.target;
 
@@ -160,6 +194,10 @@ export default class Tooltip {
 			e.preventDefault();
 			target.classList.add( 'a11y-tip--hide' );
 
+			/**
+			 * Called when a tooltip is closed.
+			 * @callback onClose
+			 */
 			if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
 				this.settings.onClose.call();
 			}
@@ -168,16 +206,32 @@ export default class Tooltip {
 		}
 	}
 
+	/**
+	 * Modifies ARIA based on click event.
+	 *
+	 * @listens click
+	 * @param  {Object} e The click event object.
+	 */
 	manageTrigger( e ) {
 		let triggerEl = e.target;
 
 		if ( 'true' === triggerEl.getAttribute( 'aria-expanded' ) ) {
 			triggerEl.setAttribute( 'aria-expanded', 'false' );
+
+			/**
+			 * Called when a tooltip is closed.
+			 * @callback onClose
+			 */
 			if ( this.settings.onClose && 'function' === typeof this.settings.onClose ) {
 				this.settings.onClose.call();
 			}
 		} else if ( 'false' === triggerEl.getAttribute( 'aria-expanded' ) ) {
 			triggerEl.setAttribute( 'aria-expanded', 'true' );
+
+			/**
+			 * Called when a tooltip is opened.
+			 * @callback onOpen
+			 */
 			if ( this.settings.onOpen && 'function' === typeof this.settings.onOpen ) {
 				this.settings.onOpen.call();
 			}
