@@ -12,6 +12,13 @@
  */
 export default class Tooltip {
 
+
+	/**
+	 * Initialize tooltips
+	 *
+	 * @param {string} element Element selector for the tooltip container.
+	 * @param {Object} options Object of optional callbacks.
+	 */
 	constructor( element, options = {} ) {
 
 		const defaults = {
@@ -60,15 +67,15 @@ export default class Tooltip {
 	 * @returns {void}
 	 */
 	setupTooltip( ttContainer ) {
-		let ttToggleClass        = 'a11y-tip--toggle';
-		let ttTriggerClass       = 'a11y-tip__trigger';
-		let ttTriggerToggleClass = 'a11y-tip__trigger--toggle';
-		let ttTrigger            = '.' + ttTriggerClass;
-		let ttTheTip             = '.a11y-tip__help';
+		const ttToggleClass        = 'a11y-tip--toggle';
+		const ttTriggerClass       = 'a11y-tip__trigger';
+		const ttTriggerToggleClass = 'a11y-tip__trigger--toggle';
+		const ttTrigger            = `.${  ttTriggerClass}`;
+		const ttTheTip             = '.a11y-tip__help';
 		let newButton;
 		let originalTrigger;
 		let getTipId;
-		let focusableElements    = [
+		const focusableElements    = [
 			'a',
 			'button',
 			'input',
@@ -77,10 +84,10 @@ export default class Tooltip {
 		];
 
 		// This will be needed for any components that don't have an ID set
-		let count   = 1;
-		let self    = ttContainer;
-		let trigger = self.querySelector( ttTrigger );
-		let tip     = self.querySelector( ttTheTip );
+		const count   = 1;
+		const self    = ttContainer;
+		const trigger = self.querySelector( ttTrigger );
+		const tip     = self.querySelector( ttTheTip );
 
 		// If a trigger is not an inherently focusable element, it'll need a
 		// tabindex. But if it can be inherently focused, then don't set a tabindex.
@@ -90,7 +97,7 @@ export default class Tooltip {
 
 		// If a tip doesn't have an ID, then we need to generate one.
 		if ( ! tip.getAttribute( 'id' ) ) {
-			tip.setAttribute( 'id', 'tool_tip_' + count );
+			tip.setAttribute( 'id', `tool_tip_${  count}` );
 		}
 
 		// If a trigger doesn't have an aria-described by, then we need
@@ -151,7 +158,7 @@ export default class Tooltip {
 	 * @param   {Object} e - The transitionend event object.
 	 */
 	manageTT( e ) {
-		let target = e.target;
+		const {target} = e;
 
 		if ( ! e.pseudoElement ) {
 
@@ -188,7 +195,7 @@ export default class Tooltip {
 	 * @param   {Object} e The keyup event object.
 	 */
 	manageEsc( e ) {
-		let target = e.target;
+		const {target} = e;
 
 		if ( 27 == e.keyCode ) {
 			e.preventDefault();
@@ -213,7 +220,7 @@ export default class Tooltip {
 	 * @param  {Object} e The click event object.
 	 */
 	manageTrigger( e ) {
-		let triggerEl = e.target;
+		const triggerEl = e.target;
 
 		if ( 'true' === triggerEl.getAttribute( 'aria-expanded' ) ) {
 			triggerEl.setAttribute( 'aria-expanded', 'false' );
