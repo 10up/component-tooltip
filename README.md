@@ -1,6 +1,6 @@
-# 10up Component Tooltip
+# 10up Tooltip component
 
-Accessible tooltip component.
+An accessible tooltip component.
 
 ## Installation
 
