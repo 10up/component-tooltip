@@ -144,6 +144,9 @@ let myTooltip = new TenUp.tooltip( () => {
 } );
 ```
 
+## Tests and CI
+All merge requests are run through pa11y (via Travis CI). Be sure to test your code before submitting a pull request: `npm run test-a11y`
+
 ## Demo
 
 Example implementations can be found in the `demo` directory.
