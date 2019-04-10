@@ -8,7 +8,8 @@
   "scripts": {
     "start": "npm install && npm run build",
     "build": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "test-a11y": "./node_modules/.bin/pa11y-ci"
   },
   "repository": {
     "type": "git",
