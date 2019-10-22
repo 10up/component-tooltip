@@ -126,10 +126,10 @@
 #### NPM
 
 ```javascript
-import tooltip from '@10up/component-tooltip';
+import Tooltip from '@10up/component-tooltip';
 
 
-tooltip( () => {
+new Tooltip( () => {
     console.log( 'my awesome callback' );
 } );
 ```
