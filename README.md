@@ -129,7 +129,7 @@
 import Tooltip from '@10up/component-tooltip';
 
 
-new Tooltip( () => {
+new Tooltip('.tooltip', () => {
     console.log( 'my awesome callback' );
 } );
 ```
@@ -141,7 +141,7 @@ new Tooltip( () => {
 Include the `tooltip.js` file from the `dist/` directory and access the component from the gobal `TenUp` object.
 
 ```javascript
-let myTooltip = new TenUp.tooltip( () => {
+let myTooltip = new TenUp.tooltip('.tooltip', () => {
     console.log( 'my awesome callback' );
 } );
 ```
