@@ -56,7 +56,6 @@ describe( 'Accessibility Tests', () => {
 		await page.click('.a11y-tip__trigger--toggle');
 		accessibilityTree = await page.accessibility.snapshot();
 
-		console.log(accessibilityTree);
 		await expect( accessibilityTree.children[9].expanded ).toBe( true );
 
 	} );
