@@ -2,10 +2,7 @@
 
 > An accessible tooltip component.
 
-[![Support Level](https://img.shields.io/badge/support-active-green.svg)](#support-level) [![Build Status][cli-img]][cli-url] [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-[cli-img]: https://travis-ci.org/10up/component-tooltip.svg?branch=master
-[cli-url]: https://travis-ci.org/10up/component-tooltip
+[![Support Level](https://img.shields.io/badge/support-active-green.svg)](#support-level) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Installation
 
