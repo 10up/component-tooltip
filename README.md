@@ -1,5 +1,7 @@
 # 10up Tooltip component
 
+**DEPRECATED.** Please go to https://github.com/10up/component-library
+
 > An accessible tooltip component.
 
 [![Support Level](https://img.shields.io/badge/support-active-green.svg)](#support-level) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Accessibility Tests](https://github.com/10up/component-tooltip/workflows/Accessibility%20Tests/badge.svg)
